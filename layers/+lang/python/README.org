@@ -2,34 +2,41 @@
 
 [[file:img/python.png]]
 
-* Table of Contents                                         :TOC_4_gh:noexport:
- - [[#description][Description]]
-   - [[#features][Features]]
- - [[#install][Install]]
-   - [[#layer][Layer]]
-   - [[#dependencies][Dependencies]]
-     - [[#auto-completion-anaconda-dependencies][Auto-completion: Anaconda dependencies]]
-     - [[#syntax-checking][Syntax checking]]
-   - [[#test-runner][Test runner]]
-   - [[#automatic-buffer-formatting-on-save][Automatic buffer formatting on save]]
-   - [[#autoflake][autoflake]]
-   - [[#pylookup][pylookup]]
-   - [[#hy-mode][Hy-mode]]
- - [[#management-of-python-versions-and-virtual-environments][Management of Python versions and virtual environments]]
-   - [[#manage-virtual-environments-with-pyvenv][Manage virtual environments with pyvenv]]
-   - [[#manage-multiple-python-versions-with-pyenv][Manage multiple Python versions with pyenv]]
-     - [[#automatic-activation-of-local-pyenv-version][Automatic activation of local pyenv version]]
- - [[#key-bindings][Key Bindings]]
-   - [[#inferior-repl-process][Inferior REPL process]]
-   - [[#running-python-script-in-shell][Running Python Script in shell]]
-   - [[#testing][Testing]]
-   - [[#refactoring][Refactoring]]
-   - [[#live-coding][Live coding]]
-   - [[#hy-repl-process][Hy REPL process]]
-   - [[#other-python-commands][Other Python commands]]
- - [[#configuration][Configuration]]
-   - [[#fill-column][Fill column]]
-   - [[#sort-imports][Sort imports]]
+* Table of Contents                     :TOC_4_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+  - [[#layer][Layer]]
+  - [[#choosing-a-backend][Choosing a backend]]
+- [[#backends][Backends]]
+  - [[#anaconda][Anaconda]]
+  - [[#language-server-protocol][Language Server Protocol]]
+- [[#additional-tools][Additional tools]]
+  - [[#syntax-checking][Syntax checking]]
+  - [[#test-runner][Test runner]]
+  - [[#buffer-formatting][Buffer formatting]]
+  - [[#automatic-buffer-formatting-on-save][Automatic buffer formatting on save]]
+  - [[#automatic-save-of-buffer-when-testing][Automatic save of buffer when testing]]
+  - [[#autoflake][autoflake]]
+  - [[#pylookup][pylookup]]
+  - [[#dap-mode-debugger only-for-lsp-backend][dap-mode debugger (only for lsp backend)]]
+- [[#configuration][Configuration]]
+  - [[#fill-column][Fill column]]
+  - [[#sort-imports][Sort imports]]
+  - [[#importmagic][Importmagic]]
+- [[#management-of-python-versions-and-virtual-environments][Management of Python versions and virtual environments]]
+  - [[#manage-virtual-environments-with-pyvenv][Manage virtual environments with pyvenv]]
+  - [[#manage-multiple-python-versions-with-pyenv][Manage multiple Python versions with pyenv]]
+    - [[#automatic-activation-of-local-pyenv-version][Automatic activation of local pyenv version]]
+- [[#key-bindings][Key bindings]]
+  - [[#inferior-repl-process][Inferior REPL process]]
+  - [[#running-python-script-in-shell][Running Python Script in shell]]
+  - [[#testing][Testing]]
+  - [[#refactoring][Refactoring]]
+  - [[#pip-package-management][Pip package management]]
+  - [[#live-coding][Live coding]]
+  - [[#other-python-commands][Other Python commands]]
+  - [[#debugger][Debugger]]
 
 * Description
 This layer adds support for the Python language.
@@ -41,7 +48,7 @@ This layer adds support for the Python language.
 - Test Runners using [[https://github.com/syl20bnr/nose.el][nose.el]] or [[https://github.com/ionrock/pytest-el][pytest]]
 - Virtual Environment using  [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] and [[https://github.com/yyuu/pyenv][pyenv]]
 - semantic mode is enabled
-- PEP8 compliant formatting via [[https://github.com/google/yapf][YAPF]]
+- PEP8 compliant formatting via [[https://github.com/google/yapf][YAPF]] or [[https://github.com/ambv/black][black]]
 - PEP8 checks with [[https://pypi.python.org/pypi/flake8][flake8]] or [[https://pypi.python.org/pypi/pylint/1.6.4][pylint]]
 - Suppression of unused import with [[https://github.com/myint/autoflake][autoflake]]
 - Use the ~%~ key to jump between blocks with [[https://github.com/redguardtoo/evil-matchit][evil-matchit]]
@@ -108,13 +115,35 @@ directory local variable in your project root. ~SPC f v d~ in Spacemacs. See
 
 The root of the project is detected with a =.git= directory or a =setup.cfg= file.
 
-** Automatic buffer formatting on save
-To enable automatic buffer formatting on save with  [[https://github.com/google/yapf][YAPF]] set the variable
-=python-enable-yapf-format-on-save= to =t=.
+** Buffer formatting
+One of [[https://github.com/google/yapf][YAPF]] (the default) or [[https://github.com/ambv/black][black]] may be selected as the formatter, via
+=python-formatter=, as ='yapf= or ='black= respectively.
 
 #+BEGIN_SRC emacs-lisp
   (setq-default dotspacemacs-configuration-layers '(
-    (python :variables python-enable-yapf-format-on-save t)))
+    (python :variables python-formatter 'yapf)))
+#+END_SRC
+
+The key binding ~SPC m =~ invokes the selected formatter on the current buffer
+when in python mode.
+
+Note that YAPF and black may also be invoked unconditionally via
+=yapfify-buffer= and =blacken-buffer=, respectively, provided that they are
+installed.
+
+** Automatic buffer formatting on save
+<<<<<<< HEAD
+To enable automatic buffer formatting on save with  [[https://github.com/google/yapf][YAPF]] set the variable
+=python-enable-yapf-format-on-save= to =t=.
+=======
+To enable automatic buffer formatting on save set the variable
+=python-format-on-save= to =t=. The formatter specified by =python-formatter=
+will be used.
+>>>>>>> c33965617... python: Add support for `black` formatter
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(
+    (python :variables python-format-on-save t)))
 #+END_SRC
 
 ** autoflake
@@ -128,9 +157,43 @@ To be able to suppress unused imports easily, install [[https://github.com/myint
 To use =pylookup= on ~SPC m h H~, make sure you update the database first, using
 ~SPC SPC pylookup-update~.
 
+<<<<<<< HEAD
 ** Hy-mode
 To be able to connect to an inferior lisp repl in =hy-mode=, you need to make sure
 that hy is installed.
+=======
+** dap-mode debugger (only for lsp backend)
+To use =dap-mode= for debugging do:
+
+#+BEGIN_SRC bash
+  pip install "ptvsd>=4.2"
+#+END_SRC
+
+* Configuration
+** Fill column
+If you want to customize the fill column value, use something like this inside
+the =user-init= function in your =.spacemacs=:
+
+#+BEGIN_SRC elisp
+  (setq-default dotspacemacs-configuration-layers '(
+      (python :variables python-fill-column 99)))
+#+END_SRC
+
+** Sort imports
+If you want imports to be automatically sorted when you save a file (using
+[[https://pypi.python.org/pypi/isort][isort]]), set the =python-sort-imports-on-save= variable in the python layer
+config section:
+
+#+BEGIN_SRC elisp
+  (setq-default dotspacemacs-configuration-layers
+    '((python :variables python-sort-imports-on-save t)))
+#+END_SRC
+
+or as a directory-local variable (for per-project settings).
+
+** Importmagic
+Install importmagic and epc for importmagic functionality.
+>>>>>>> c33965617... python: Add support for `black` formatter
 
 #+BEGIN_SRC sh
   pip install hy
@@ -278,6 +341,7 @@ Send code to hy REPL commands:
 
 ** Other Python commands
 
+<<<<<<< HEAD
 | Key Binding | Description                                                                  |
 |-------------+------------------------------------------------------------------------------|
 | ~SPC m =~   | Reformat the buffer according to PEP8 using  [[https://github.com/google/yapf][YAPF]]                            |
@@ -316,3 +380,74 @@ config section:
 #+END_SRC
 
 or as a directory-local variable (for per-project settings).
+=======
+| Key binding   | Description                                                                       |
+|---------------+-----------------------------------------------------------------------------------|
+| ~SPC m =~     | reformat the buffer using formatter specified in =python-formatter=               |
+| ~SPC m d b~   | toggle a breakpoint using =wdb=, =ipdb=, =pudb=, =pdb= or =python3.7= (and above) |
+| ~SPC m g a~   | go to assignment using =anaconda-mode-find-assignments= (~C-o~ to jump back)      |
+| ~SPC m g b~   | jump back                                                                         |
+| ~SPC m g g~   | go to definition using =anaconda-mode-find-definitions= (~C-o~ to jump back)      |
+| ~SPC m g u~   | navigate between usages with =anaconda-mode-find-references=                      |
+| ~SPC m h d~   | look for documentation using =helm-pydoc=                                         |
+| ~SPC m h h~   | quick documentation using anaconda                                                |
+| ~SPC m h H~   | open documentation in =firefox= using [[https://github.com/tsgates/pylookup][pylookup]]                                    |
+| ~SPC m v a~   | activate a virtual environment in any directory                                   |
+| ~SPC m v d~   | deactivate active virtual environment                                             |
+| ~SPC m v s~   | set a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]]                                                |
+| ~SPC m v u~   | unset a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]]                                              |
+| ~SPC m v w~   | work on virtual environment in =WORKON_HOME=                                      |
+| ~SPC m v p a~ | activate pipenv in current project                                                |
+| ~SPC m v p d~ | deactivate pipenv in current project                                              |
+| ~SPC m v p i~ | install module into pipenv environment                                            |
+| ~SPC m v p o~ | open pipenv module in buffer                                                      |
+| ~SPC m v p s~ | launch pipenv shell in current project                                            |
+| ~SPC m v p u~ | uninstall module from pipenv environment                                          |
+
+** Debugger
+
+| Key binding   | Description                     |
+|---------------+---------------------------------|
+| ~SPC m d d d~ | start debugging                 |
+| ~SPC m d d l~ | debug last configuration        |
+| ~SPC m d d r~ | debug recent configuration      |
+|---------------+---------------------------------|
+| ~SPC m d c~   | continue                        |
+| ~SPC m d i~   | step in                         |
+| ~SPC m d o~   | step out                        |
+| ~SPC m d s~   | next step                       |
+| ~SPC m d v~   | inspect value at point          |
+| ~SPC m d r~   | restart frame                   |
+|---------------+---------------------------------|
+| ~SPC m d .~   | debug transient state           |
+|---------------+---------------------------------|
+| ~SPC m d a~   | abandon current session         |
+| ~SPC m d A~   | abandon all process             |
+|---------------+---------------------------------|
+| ~SPC m d e e~ | eval                            |
+| ~SPC m d e r~ | eval region                     |
+| ~SPC m d e t~ | eval value at point             |
+|---------------+---------------------------------|
+| ~SPC m d S s~ | switch session                  |
+| ~SPC m d S t~ | switch thread                   |
+| ~SPC m d S f~ | switch frame                    |
+|---------------+---------------------------------|
+| ~SPC m d I i~ | inspect                         |
+| ~SPC m d I r~ | inspect region                  |
+| ~SPC m d I t~ | inspect value at point          |
+|---------------+---------------------------------|
+| ~SPC m d b b~ | toggle a breakpoint             |
+| ~SPC m d b c~ | change breakpoint condition     |
+| ~SPC m d b l~ | change breakpoint log condition |
+| ~SPC m d b h~ | change breakpoint hit count     |
+| ~SPC m d b a~ | add a breakpoint                |
+| ~SPC m d b d~ | delete a breakpoint             |
+| ~SPC m d b D~ | clear all breakpoints           |
+|---------------+---------------------------------|
+| ~SPC m d '_~  | Run debug REPL                  |
+|---------------+---------------------------------|
+| ~SPC m d w l~ | list local variables            |
+| ~SPC m d w o~ | goto output buffer if present   |
+| ~SPC m d w s~ | list sessions                   |
+| ~SPC m d w b~ | list breakpoints                |
+>>>>>>> c33965617... python: Add support for `black` formatter

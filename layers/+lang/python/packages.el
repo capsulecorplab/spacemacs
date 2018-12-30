@@ -10,35 +10,40 @@
 ;;; License: GPLv3
 
 (setq python-packages
-  '(
-    anaconda-mode
-    company
-    (company-anaconda :toggle (configuration-layer/package-usedp 'company))
-    cython-mode
-    eldoc
-    evil-matchit
-    flycheck
-    ggtags
-    helm-cscope
-    helm-gtags
-    (helm-pydoc :toggle (configuration-layer/package-usedp 'helm))
-    hy-mode
-    live-py-mode
-    (nose :location local)
-    org
-    pip-requirements
-    py-isort
-    pyenv-mode
-    (pylookup :location local)
-    pytest
-    (python :location built-in)
-    pyvenv
-    semantic
-    smartparens
-    stickyfunc-enhance
-    xcscope
-    yapfify
-    ))
+      '(
+        blacken
+        company
+        counsel-gtags
+        cython-mode
+        eldoc
+        evil-matchit
+        flycheck
+        ggtags
+        helm-cscope
+        helm-gtags
+        (helm-pydoc :requires helm)
+        importmagic
+        live-py-mode
+        (nose :location local)
+        org
+        pip-requirements
+        pipenv
+        pippel
+        py-isort
+        pyenv-mode
+        (pylookup :location local)
+        pytest
+        (python :location built-in)
+        pyvenv
+        semantic
+        smartparens
+        stickyfunc-enhance
+        xcscope
+        yapfify
+        ;; packages for anaconda backend
+        anaconda-mode
+        (company-anaconda :requires company)
+        ))
 
 (defun python/init-anaconda-mode ()
   (use-package anaconda-mode
@@ -79,6 +84,17 @@
     :defer t
     :init
     (push 'company-anaconda company-backends-python-mode)))
+
+(defun python/init-blacken ()
+  (use-package blacken
+    :defer t
+    :init
+    (progn
+      (spacemacs//bind-python-formatter-keys)
+      (when (and python-format-on-save
+                 (eq 'black python-formatter))
+        (add-hook 'python-mode-hook 'blacken-mode)))
+    :config (spacemacs|hide-lighter blacken-mode)))
 
 (defun python/init-cython-mode ()
   (use-package cython-mode
@@ -444,7 +460,15 @@ fix this issue."
     :defer t
     :init
     (progn
+<<<<<<< HEAD
       (spacemacs/set-leader-keys-for-major-mode 'python-mode
         "=" 'yapfify-buffer)
       (when python-enable-yapf-format-on-save
         (add-hook 'python-mode-hook 'yapf-mode)))))
+=======
+      (spacemacs//bind-python-formatter-keys)
+      (when (and python-format-on-save
+                 (eq 'yapf python-formatter))
+        (add-hook 'python-mode-hook 'yapf-mode)))
+    :config (spacemacs|hide-lighter yapf-mode)))
+>>>>>>> c33965617... python: Add support for `black` formatter
